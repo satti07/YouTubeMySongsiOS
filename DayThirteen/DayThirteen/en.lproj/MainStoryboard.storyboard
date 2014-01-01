@@ -18,7 +18,7 @@
                                 <rect key="frame" x="0.0" y="190" width="320" height="358"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="258" type="user" id="mSL-Vw-1ft"/>
+                                    <constraint firstAttribute="height" relation="greaterThanOrEqual" constant="220" type="user" id="mSL-Vw-1ft"/>
                                 </constraints>
                                 <prototypes>
                                     <tableViewCell contentMode="scaleToFill" selectionStyle="blue" indentationWidth="10" reuseIdentifier="Cell" rowHeight="30" id="Ny0-Qn-oPd">

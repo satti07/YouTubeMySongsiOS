@@ -12,8 +12,9 @@
 
 NSArray *itemsArray;
 int MAX_QUERY_SONGS = 5;
+bool isFullScreen = false;
 static NSString *youTubeLandscapeVideoHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;}</style></head> <body> <div id=\"player\"></div> <script> var tag = document.createElement('script'); tag.src = \"http://www.youtube.com/player_api\"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag); var player; function onYouTubePlayerAPIReady() { player = new YT.Player('player', { width:'%0.0f', height:'%0.0f', videoId:'%@', events: { 'onReady': onPlayerReady, }, playerVars : {controls: 1, rel: 0, modestbranding: 1, html5: 1, playsinline: 0} }); } function onPlayerReady(event) { /*event.target.playVideo();*/ } </script> </body> </html>";
-static NSString *youTubePortraitVideoHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;}</style></head> <body> <div id=\"player\"></div> <script> var tag = document.createElement('script'); tag.src = \"http://www.youtube.com/player_api\"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag); var player; function onYouTubePlayerAPIReady() { player = new YT.Player('player', { width:'%0.0f', height:'%0.0f', videoId:'%@', events: { 'onReady': onPlayerReady, }, playerVars : {controls: 1, rel: 0, modestbranding: 1, html5: 1, playsinline: 1} }); } function onPlayerReady(event) { /*event.target.playVideo();*/ } </script> </body> </html>";
+static NSString *youTubePortraitVideoHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;}</style></head> <body> <div id=\"player\"></div> <script> var tag = document.createElement('script'); tag.src = \"http://www.youtube.com/player_api\"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag); var player; function onYouTubePlayerAPIReady() { player = new YT.Player('player', { width:'%0.0f', height:'%0.0f', videoId:'%@', events: { 'onReady': onPlayerReady, }, playerVars : {controls: 1, rel: 0, modestbranding: 1, html5: 1, playsinline: 1, autoplay: 1} }); } function onPlayerReady(event) { /*event.target.playVideo();*/ } </script> </body> </html>";
 static NSString* loadingSongsHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Please wait, loading songs...</div></body> </html>";
 static NSString* noSongFoundHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Sorry! Could not find video! :(</div></body> </html>";
 static NSString* welcomeHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Click on a song to play</div></body> </html>";
@@ -28,6 +29,7 @@ static NSString* YOUTUBE_VIDEO_INFORMATION_URL = @"http://www.youtube.com/get_vi
     [super loadView];
     //[webview loadHTMLString:loadingSongsHTML baseURL:[[NSBundle mainBundle] resourceURL]];
 }
+
 
 - (void)viewDidLoad
 {
@@ -45,12 +47,14 @@ static NSString* YOUTUBE_VIDEO_INFORMATION_URL = @"http://www.youtube.com/get_vi
     else
         [webview loadHTMLString:noSongsOnPhoneHTML baseURL:[[NSBundle mainBundle] resourceURL]];
     
+    CGPoint origin = CGPointMake(0.0,
+                                 self.view.frame.size.height -
+                                 CGSizeFromGADAdSize(kGADAdSizeBanner).height);
     
-    /*
     // Use predefined GADAdSize constants to define the GADBannerView.
-    bannerView_ = [[GADBannerView alloc] initWithAdSize:kGADAdSizeBanner];
+    bannerView_ = [[GADBannerView alloc] initWithAdSize:kGADAdSizeBanner
+                                                 origin:origin];
     
-
     
     // Specify the ad unit ID.
     bannerView_.adUnitID = @"a152c34c7891112";
@@ -62,8 +66,38 @@ static NSString* YOUTUBE_VIDEO_INFORMATION_URL = @"http://www.youtube.com/get_vi
     
     
     // Initiate a generic request to load it with an ad.
-    [bannerView_ loadRequest:[GADRequest request]];*/
+    [bannerView_ loadRequest:[GADRequest request]];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(youTubeStarted:) name:@"UIMoviePlayerControllerDidEnterFullscreenNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(youTubeFinished:) name:@"UIMoviePlayerControllerDidExitFullscreenNotification" object:nil];
+
 }
+
+- (BOOL) shouldAutorotate
+{
+    return NO;
+}
+
+
+-(void)youTubeStarted:(NSNotification *)notification{
+    //NSLog(@"fullscreen started");
+    isFullScreen = true;
+}
+
+-(void)youTubeFinished:(NSNotification *)notification{
+    //NSLog(@"left fullscreen");
+    isFullScreen = false;
+    // if we are in landscape mode we want to rotate back to portrait
+    [[UIApplication sharedApplication] setStatusBarOrientation:UIDeviceOrientationPortrait animated:NO];
+}
+
+- (NSUInteger)supportedInterfaceOrientations{
+    if (!isFullScreen)
+        return UIInterfaceOrientationMaskPortrait;
+    else
+        return UIInterfaceOrientationMaskAllButUpsideDown;
+}
+
 
 
 
