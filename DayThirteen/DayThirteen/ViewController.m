@@ -128,7 +128,7 @@ NSArray* getResults(NSString* query) {
             return myArray;
         NSString *html = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         
-        NSLog(@"%@", html);
+        //NSLog(@"%@", html);
         
         NSError *error = nil;
         id object = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
@@ -152,7 +152,7 @@ NSArray* getResults(NSString* query) {
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-    NSLog(@"Rotation triggered");
+    /*NSLog(@"Rotation triggered");
     if (currentPortraitHTML != nil) {
         [[NSURLCache sharedURLCache] removeAllCachedResponses];
         UIInterfaceOrientation orientation = [[UIDevice currentDevice] orientation];
@@ -160,7 +160,7 @@ NSArray* getResults(NSString* query) {
             [webview loadHTMLString:currentPortraitHTML baseURL:[[NSBundle mainBundle] resourceURL]];
         else
             [webview loadHTMLString:currentLandscapeHTML baseURL:[[NSBundle mainBundle] resourceURL]];
-    }
+    }*/
     
 }
 
@@ -172,7 +172,7 @@ NSArray* getResults(NSString* query) {
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    NSLog(@"Number of items : %i", [itemsArray count]);
+    //NSLog(@"Number of items : %i", [itemsArray count]);
     
     return [itemsArray count];
 }
