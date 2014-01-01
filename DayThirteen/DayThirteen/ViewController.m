@@ -12,13 +12,15 @@
 
 NSArray *itemsArray;
 int MAX_QUERY_SONGS = 5;
-static NSString *youTubeVideoHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;}</style></head> <body> <div id=\"player\"></div> <script> var tag = document.createElement('script'); tag.src = \"http://www.youtube.com/player_api\"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag); var player; function onYouTubePlayerAPIReady() { player = new YT.Player('player', { width:'%0.0f', height:'%0.0f', videoId:'%@', events: { 'onReady': onPlayerReady, }, playerVars : {controls: 1, rel: 0, modestbranding: 1, html5: 1, playsinline: 0} }); } function onPlayerReady(event) { /*event.target.playVideo();*/ } </script> </body> </html>";
+static NSString *youTubeLandscapeVideoHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;}</style></head> <body> <div id=\"player\"></div> <script> var tag = document.createElement('script'); tag.src = \"http://www.youtube.com/player_api\"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag); var player; function onYouTubePlayerAPIReady() { player = new YT.Player('player', { width:'%0.0f', height:'%0.0f', videoId:'%@', events: { 'onReady': onPlayerReady, }, playerVars : {controls: 1, rel: 0, modestbranding: 1, html5: 1, playsinline: 0} }); } function onPlayerReady(event) { /*event.target.playVideo();*/ } </script> </body> </html>";
+static NSString *youTubePortraitVideoHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;}</style></head> <body> <div id=\"player\"></div> <script> var tag = document.createElement('script'); tag.src = \"http://www.youtube.com/player_api\"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag); var player; function onYouTubePlayerAPIReady() { player = new YT.Player('player', { width:'%0.0f', height:'%0.0f', videoId:'%@', events: { 'onReady': onPlayerReady, }, playerVars : {controls: 1, rel: 0, modestbranding: 1, html5: 1, playsinline: 1} }); } function onPlayerReady(event) { /*event.target.playVideo();*/ } </script> </body> </html>";
 static NSString* loadingSongsHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Please wait, loading songs...</div></body> </html>";
 static NSString* noSongFoundHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Sorry! Could not find video! :(</div></body> </html>";
 static NSString* welcomeHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Click on a song to play</div></body> </html>";
 static NSString* noSongsOnPhoneHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>No songs found!</div></body> </html>";
 static NSString* noDataConnectionHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>No data connection!</div></body> </html>";
-NSString* currentHTML = nil;
+NSString* currentPortraitHTML = nil;
+NSString* currentLandscapeHTML = nil;
 
 static NSString* YOUTUBE_VIDEO_INFORMATION_URL = @"http://www.youtube.com/get_video_info?&video_id=";
 
@@ -39,10 +41,9 @@ static NSString* YOUTUBE_VIDEO_INFORMATION_URL = @"http://www.youtube.com/get_vi
     itemsArray = [allSongs items];
     
     if ([itemsArray count] != 0)
-        currentHTML = welcomeHTML;
+        [webview loadHTMLString:welcomeHTML baseURL:[[NSBundle mainBundle] resourceURL]];
     else
-        currentHTML = noSongsOnPhoneHTML;
-    [webview loadHTMLString:currentHTML baseURL:[[NSBundle mainBundle] resourceURL]];
+        [webview loadHTMLString:noSongsOnPhoneHTML baseURL:[[NSBundle mainBundle] resourceURL]];
     
     
     /*
@@ -118,9 +119,13 @@ NSArray* getResults(NSString* query) {
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
     NSLog(@"Rotation triggered");
-    if (currentHTML != nil) {
+    if (currentPortraitHTML != nil) {
         [[NSURLCache sharedURLCache] removeAllCachedResponses];
-        [webview loadHTMLString:currentHTML baseURL:[[NSBundle mainBundle] resourceURL]];
+        UIInterfaceOrientation orientation = [[UIDevice currentDevice] orientation];
+        if (orientation == UIDeviceOrientationPortrait || orientation == UIDeviceOrientationPortraitUpsideDown)
+            [webview loadHTMLString:currentPortraitHTML baseURL:[[NSBundle mainBundle] resourceURL]];
+        else
+            [webview loadHTMLString:currentLandscapeHTML baseURL:[[NSBundle mainBundle] resourceURL]];
     }
     
 }
@@ -218,6 +223,8 @@ NSString* getSongId(NSString* title, NSString* album, NSString* artist) {
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //NSLog(@"Row tapped at %i", [indexPath row]);
+    currentLandscapeHTML = nil;
+    currentPortraitHTML = nil;
     
     MPMediaItem *item =[itemsArray objectAtIndex:[indexPath row]];
     
@@ -230,11 +237,16 @@ NSString* getSongId(NSString* title, NSString* album, NSString* artist) {
     
     NSString* html = noSongFoundHTML;
     
-    if (videoId != nil)
-        html = [NSString stringWithFormat:youTubeVideoHTML, webview.frame.size.width, webview.frame.size.height, videoId];
+    if (videoId != nil) {
+        currentPortraitHTML = [NSString stringWithFormat:youTubePortraitVideoHTML, webview.frame.size.width, webview.frame.size.height, videoId];
+        currentLandscapeHTML = [NSString stringWithFormat:youTubeLandscapeVideoHTML, webview.frame.size.width, webview.frame.size.height, videoId];
+    }
    
-    currentHTML = html;
-    [webview loadHTMLString:currentHTML baseURL:[[NSBundle mainBundle] resourceURL]];
+    UIInterfaceOrientation orientation = [[UIDevice currentDevice] orientation];
+    if (orientation == UIDeviceOrientationPortrait || orientation == UIDeviceOrientationPortraitUpsideDown)
+        [webview loadHTMLString:currentPortraitHTML baseURL:[[NSBundle mainBundle] resourceURL]];
+    else
+        [webview loadHTMLString:currentLandscapeHTML baseURL:[[NSBundle mainBundle] resourceURL]];
 }
 
 
