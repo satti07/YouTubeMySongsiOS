@@ -17,7 +17,7 @@ static NSString *youTubeLandscapeVideoHTML = @"<!DOCTYPE html><html><head><style
 static NSString *youTubePortraitVideoHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;}</style></head> <body> <div id=\"player\"></div> <script> var tag = document.createElement('script'); tag.src = \"http://www.youtube.com/player_api\"; var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag); var player; function onYouTubePlayerAPIReady() { player = new YT.Player('player', { width:'%0.0f', height:'%0.0f', videoId:'%@', events: { 'onReady': onPlayerReady, }, playerVars : {controls: 1, rel: 0, modestbranding: 1, html5: 1, playsinline: 1, autoplay: 1} }); } function onPlayerReady(event) { /*event.target.playVideo();*/ } </script> </body> </html>";
 static NSString* loadingSongsHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Please wait, loading songs...</div></body> </html>";
 static NSString* noSongFoundHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Sorry! Could not find video! :(</div></body> </html>";
-static NSString* welcomeHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Click on a song to play</div></body> </html>";
+static NSString* welcomeHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background:-webkit-linear-gradient(top, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 100%)}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>Click on a song to play</div></body> </html>";
 static NSString* noSongsOnPhoneHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>No songs found!</div></body> </html>";
 static NSString* noDataConnectionHTML = @"<!DOCTYPE html><html><head><style>body{margin:0px 0px 0px 0px;background-color:black}</style></head> <body> <div style='width:100%;height:100%;text-align:center;padding:20px;font-family:\"Helvetica Neue\";font-weight:lighter;font-size:10pt;color:gray'>No data connection!</div></body> </html>";
 NSString* currentPortraitHTML = nil;
@@ -65,7 +65,8 @@ static NSString* YOUTUBE_VIDEO_INFORMATION_URL = @"http://www.youtube.com/get_vi
     [self.view addSubview:bannerView_];
     
     
-    // Initiate a generic request to load it with an ad.
+
+    //req.testDevices = [NSArray arrayWithObjects:@"e56a723ec569d203384955f3f299dc52", nil];
     [bannerView_ loadRequest:[GADRequest request]];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(youTubeStarted:) name:@"UIMoviePlayerControllerDidEnterFullscreenNotification" object:nil];
@@ -126,7 +127,7 @@ NSArray* getResults(NSString* query) {
         NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:NULL error:NULL];
         if (data == nil)
             return myArray;
-        NSString *html = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        //NSString *html = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         
         //NSLog(@"%@", html);
         
@@ -257,8 +258,6 @@ NSString* getSongId(NSString* title, NSString* album, NSString* artist) {
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //NSLog(@"Row tapped at %i", [indexPath row]);
-    currentLandscapeHTML = nil;
-    currentPortraitHTML = nil;
     
     MPMediaItem *item =[itemsArray objectAtIndex:[indexPath row]];
     
@@ -274,6 +273,9 @@ NSString* getSongId(NSString* title, NSString* album, NSString* artist) {
     if (videoId != nil) {
         currentPortraitHTML = [NSString stringWithFormat:youTubePortraitVideoHTML, webview.frame.size.width, webview.frame.size.height, videoId];
         currentLandscapeHTML = [NSString stringWithFormat:youTubeLandscapeVideoHTML, webview.frame.size.width, webview.frame.size.height, videoId];
+    } else {
+        currentLandscapeHTML = noSongFoundHTML;
+        currentPortraitHTML = noSongFoundHTML;
     }
    
     UIInterfaceOrientation orientation = [[UIDevice currentDevice] orientation];
