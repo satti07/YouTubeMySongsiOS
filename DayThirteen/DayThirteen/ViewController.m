@@ -1,6 +1,7 @@
 
 
 #import "ViewController.h"
+#import "Reachability.h"
 #import <MediaPlayer/MPMediaQuery.h>
 
 
@@ -253,11 +254,26 @@ NSString* getSongId(NSString* title, NSString* album, NSString* artist) {
     return nil;
 }
 
+
+
 #pragma mark - Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     //NSLog(@"Row tapped at %i", [indexPath row]);
+    
+    Reachability* wifiReach = [Reachability reachabilityWithHostName: @"www.youtube.com"];
+    NetworkStatus netStatus = [wifiReach currentReachabilityStatus];
+    if (netStatus == NotReachable) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"No network connection"
+                                                        message:@"You must be connected to the internet to use this app."
+                                                       delegate:nil
+                                              cancelButtonTitle:@"OK"
+                                              otherButtonTitles:nil];
+        [alert show];
+        return;
+    }
+    
     
     MPMediaItem *item =[itemsArray objectAtIndex:[indexPath row]];
     
@@ -268,7 +284,6 @@ NSString* getSongId(NSString* title, NSString* album, NSString* artist) {
     
     NSString* videoId = getSongId(songTitle, songAlbum, songArtist);
     
-    NSString* html = noSongFoundHTML;
     
     if (videoId != nil) {
         currentPortraitHTML = [NSString stringWithFormat:youTubePortraitVideoHTML, webview.frame.size.width, webview.frame.size.height, videoId];
